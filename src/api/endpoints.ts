@@ -48,6 +48,10 @@ export const ENDPOINTS = {
     DELETE: (id: string) => `/api/users/${id}`,
   },
 
+  ROLES: {
+    LIST: "/roles",
+  },
+
   CATEGORIES: {
     LIST: "/api/categories",
     TREE: "/api/categories",

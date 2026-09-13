@@ -7,6 +7,10 @@ import {
   type RegisterFormData,
   updateUserSchema,
   type UpdateUserFormData,
+  adminRegisterSchema,
+  adminUpdateUserSchema,
+  type AdminRegisterFormData,
+  type AdminUpdateUserFormData,
 } from "../../validators/auth.validators";
 import { useAuth } from "../../hooks/useAuth";
 import InputComponent from "../common/InputComponent";
@@ -15,20 +19,42 @@ import Alert from "../common/Alert";
 import { User } from "@/types/user.types";
 import { usersService } from "@/api/services/users.service";
 import { showError, showSuccess } from "@/utils/toast";
+import Select from "../common/Select";
+import { useRoles } from "../../hooks/useRoles";
 
 interface RegisterFormProps {
   user?: User | null;
   onSuccess?: () => void;
+  showRole?: boolean;
 }
 
-type UserFormData = RegisterFormData | UpdateUserFormData;
+type UserFormData =
+  | RegisterFormData
+  | UpdateUserFormData
+  | AdminRegisterFormData
+  | AdminUpdateUserFormData;
 
-const RegisterForm = ({ onSuccess, user }: RegisterFormProps) => {
+const RegisterForm = ({
+  onSuccess,
+  user,
+  showRole = false,
+}: RegisterFormProps) => {
   const navigate = useNavigate();
   const isEditing = !!user;
-  const { register: authRegister, isLoading, error, clearError } = useAuth();
+  const {
+    register: authRegister,
+    isLoading,
+    error,
+    clearError,
+    isAuthenticated,
+  } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const { isAuthenticated } = useAuth();
+  const {
+    roles,
+    isLoading: areRolesLoading,
+    error: rolesError,
+    fetchRoles,
+  } = useRoles();
 
   const {
     register,
@@ -36,7 +62,15 @@ const RegisterForm = ({ onSuccess, user }: RegisterFormProps) => {
     reset,
     formState: { errors },
   } = useForm<UserFormData>({
-    resolver: zodResolver(isEditing ? updateUserSchema : registerSchema),
+    resolver: zodResolver(
+      isEditing
+        ? showRole
+          ? adminUpdateUserSchema
+          : updateUserSchema
+        : showRole
+          ? adminRegisterSchema
+          : registerSchema,
+    ),
     defaultValues: user
       ? {
           firstName: user.firstName,
@@ -44,9 +78,16 @@ const RegisterForm = ({ onSuccess, user }: RegisterFormProps) => {
           email: user.email,
           phone: user.phone,
           address: user.address,
+          ...(showRole ? { roleId: user.roles?.[0]?.id ?? "" } : {}),
         }
       : undefined,
   });
+
+  useEffect(() => {
+    if (showRole) {
+      void fetchRoles();
+    }
+  }, [fetchRoles, showRole]);
 
   useEffect(() => {
     if (user) {
@@ -56,39 +97,57 @@ const RegisterForm = ({ onSuccess, user }: RegisterFormProps) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
+        ...(showRole ? { roleId: user.roles?.[0]?.id ?? "" } : {}),
       });
     }
-  }, [reset, user]);
+  }, [reset, showRole, user]);
 
   const onSubmit = async (data: UserFormData) => {
     try {
       setSubmitError(null);
       clearError();
       if (user && isEditing) {
-        const updateUser = data as UpdateUserFormData;
+        const updateUser = data as UpdateUserFormData & { roleId?: string };
         await usersService.update(user.id, {
           address: updateUser.address,
           firstName: updateUser.firstName,
           email: updateUser.email,
           lastName: updateUser.lastName,
           phone: updateUser.phone,
+          roles:
+            showRole && updateUser.roleId
+              ? [{ id: updateUser.roleId }]
+              : undefined,
         });
         showSuccess(
           "Usuario actualizado",
           "Los cambios del usuario se guardaron correctamente.",
         );
       } else {
-        const createUser = data as RegisterFormData;
-        await authRegister(
-          createUser.email,
-          createUser.password,
-          createUser.firstName,
-          createUser.lastName,
-          createUser.address,
-          createUser.phone,
-        );
-        if (!isAuthenticated) {
-          navigate("/login");
+        const createUser = data as RegisterFormData & { roleId?: string };
+        if (showRole) {
+          await usersService.create({
+            email: createUser.email,
+            password: createUser.password,
+            firstName: createUser.firstName,
+            lastName: createUser.lastName,
+            address: createUser.address,
+            phone: createUser.phone,
+            roles: [{ id: createUser.roleId ?? "" }],
+          });
+          showSuccess("Usuario creado", "El usuario se creó correctamente.");
+        } else {
+          await authRegister(
+            createUser.email,
+            createUser.password,
+            createUser.firstName,
+            createUser.lastName,
+            createUser.address,
+            createUser.phone,
+          );
+          if (!isAuthenticated) {
+            navigate("/login");
+          }
         }
       }
       onSuccess?.();
@@ -186,16 +245,45 @@ const RegisterForm = ({ onSuccess, user }: RegisterFormProps) => {
         </>
       )}
 
+      {showRole && (
+        <>
+          <Select
+            label="Rol"
+            options={[
+              {
+                value: "",
+                label: areRolesLoading
+                  ? "Cargando roles..."
+                  : "Selecciona un rol",
+              },
+              ...roles.map((role) => ({ value: role.id, label: role.name })),
+            ]}
+            disabled={areRolesLoading}
+            {...register("roleId")}
+            error={"roleId" in errors ? errors.roleId?.message : undefined}
+          />
+          {rolesError && <Alert variant="destructive">{rolesError}</Alert>}
+        </>
+      )}
+
       <Button type="submit" disabled={isLoading} className="w-full bg-blue-950">
-        {isLoading ? "Registrando..." : "Registrarse"}
+        {isLoading
+          ? isEditing
+            ? "Actualizando..."
+            : "Registrando..."
+          : isEditing
+            ? "Actualizar"
+            : "Crear"}
       </Button>
 
-      <p className="text-sm text-center text-muted-foreground">
-        ¿Ya tienes cuenta?{" "}
-        <a href="/login" className="text-primary hover:underline">
-          Iniciar sesión
-        </a>
-      </p>
+      {!isAuthenticated && (
+        <p className="text-sm text-center text-muted-foreground">
+          ¿Ya tienes cuenta?{" "}
+          <a href="/login" className="text-primary hover:underline">
+            Iniciar sesión
+          </a>
+        </p>
+      )}
     </form>
   );
 };

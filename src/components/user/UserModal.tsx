@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-//import UserForm from "../forms/UserForm";
 import type { User } from "@/types/user.types";
 import RegisterForm from "../forms/RegisterForm";
 
@@ -37,8 +36,7 @@ export const UserModal = ({
             {isEditing ? "Editar Usuario" : "Crear Usuario"}
           </DialogTitle>
         </DialogHeader>
-        {/* <UserForm user={user} onSuccess={handleSuccess} /> */}
-        <RegisterForm user={user} onSuccess={handleSuccess} />
+        <RegisterForm user={user} onSuccess={handleSuccess} showRole />
       </DialogContent>
     </Dialog>
   );

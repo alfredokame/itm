@@ -35,6 +35,8 @@ import MyOrdersPage from "@/pages/Auth/MyOrders";
 import InformationPage from "@/pages/Admin/Information";
 import { QrGeneratorPage } from "@/pages/Admin/QrGenerator";
 import AboutAdminPage from "@/pages/Admin/About";
+import CatalogCategoryPage from "@/pages/Admin/Catalog/CatalogCategory";
+import { hasUserRole } from "@/utils/roles";
 
 // Componente para proteger rutas
 interface ProtectedRouteProps {
@@ -59,6 +61,20 @@ const AdminProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!user?.role?.includes("admin")) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const CatalogProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!hasUserRole(user, "admin") && !hasUserRole(user, "seller")) {
     return <Navigate to="/" replace />;
   }
 
@@ -185,6 +201,15 @@ function RoutesComponents() {
             <ProtectedRoute>
               <ProductsPage />
             </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/catalogo/:categoryId"
+          element={
+            <CatalogProtectedRoute>
+              <CatalogCategoryPage />
+            </CatalogProtectedRoute>
           }
         />
 

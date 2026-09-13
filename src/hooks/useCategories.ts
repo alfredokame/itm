@@ -4,6 +4,7 @@ export const useCategories = () => {
   const {
     categories,
     tree,
+    catalogCategories,
     selectedCategory,
     isLoading,
     error,
@@ -14,6 +15,7 @@ export const useCategories = () => {
     filters,
     fetchAll,
     fetchTree,
+    fetchCatalogCategories,
     createCategory,
     updateCategory,
     deleteCategory,
@@ -27,6 +29,7 @@ export const useCategories = () => {
   return {
     categories,
     tree,
+    catalogCategories,
     selectedCategory,
     isLoading,
     error,
@@ -37,6 +40,7 @@ export const useCategories = () => {
     filters,
     fetchAll,
     fetchTree,
+    fetchCatalogCategories,
     createCategory,
     updateCategory,
     deleteCategory,
@@ -44,6 +48,6 @@ export const useCategories = () => {
     setItemsPerPage,
     clearError,
     setFilters,
-    clearFilters
+    clearFilters,
   };
 };

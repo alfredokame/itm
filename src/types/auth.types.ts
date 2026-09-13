@@ -42,8 +42,11 @@ export interface RegisterPayload {
 export interface CreateUserPayload {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
   lastName: string;
+  address: string;
+  phone: string;
+  roles: Array<{ id: string }>;
 }
 
 export interface UpdateUserPayload {
@@ -52,4 +55,5 @@ export interface UpdateUserPayload {
   lastName: string;
   address: string;
   phone: string;
+  roles?: Array<{ id: string }>;
 }

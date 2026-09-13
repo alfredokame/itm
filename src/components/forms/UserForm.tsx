@@ -12,6 +12,8 @@ import {
 import Alert from "../common/Alert";
 import Button from "../common/Button";
 import Input from "../common/Input";
+import Select from "../common/Select";
+import { useRoles } from "../../hooks/useRoles";
 
 interface UserFormProps {
   user?: User | null;
@@ -24,6 +26,12 @@ const UserForm = ({ user, onSuccess }: UserFormProps) => {
   const isEditing = !!user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const {
+    roles,
+    isLoading: areRolesLoading,
+    error: rolesError,
+    fetchRoles,
+  } = useRoles();
 
   const {
     register,
@@ -37,9 +45,14 @@ const UserForm = ({ user, onSuccess }: UserFormProps) => {
           name: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          roleId: user.roles?.[0]?.id ?? "",
         }
       : undefined,
   });
+
+  useEffect(() => {
+    void fetchRoles();
+  }, [fetchRoles]);
 
   useEffect(() => {
     if (user) {
@@ -47,6 +60,7 @@ const UserForm = ({ user, onSuccess }: UserFormProps) => {
         name: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        roleId: user.roles?.[0]?.id ?? "",
       });
     }
   }, [reset, user]);
@@ -63,10 +77,20 @@ const UserForm = ({ user, onSuccess }: UserFormProps) => {
           lastName: updateData.lastName,
           email: updateData.email,
           address: "",
-          phone: ""
+          phone: "",
+          roles: [{ id: updateData.roleId }],
         });
       } else {
-        await usersService.create(data as CreateUserFormData);
+        const createData = data as CreateUserFormData;
+        await usersService.create({
+          firstName: createData.name,
+          lastName: createData.lastName,
+          email: createData.email,
+          password: createData.password,
+          address: "",
+          phone: "",
+          roles: [{ id: createData.roleId }],
+        });
         reset();
       }
 
@@ -119,6 +143,22 @@ const UserForm = ({ user, onSuccess }: UserFormProps) => {
           error={"password" in errors ? errors.password?.message : undefined}
         />
       )}
+
+      <Select
+        label="Rol"
+        options={[
+          {
+            value: "",
+            label: areRolesLoading ? "Cargando roles..." : "Selecciona un rol",
+          },
+          ...roles.map((role) => ({ value: role.id, label: role.name })),
+        ]}
+        disabled={areRolesLoading}
+        {...register("roleId")}
+        error={errors.roleId?.message}
+      />
+
+      {rolesError && <Alert variant="destructive">{rolesError}</Alert>}
 
       <div className="flex justify-end">
         <Button type="submit" isLoading={isSubmitting}>

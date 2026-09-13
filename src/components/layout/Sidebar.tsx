@@ -1,15 +1,26 @@
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { useUIStore } from "../../store/uiStore";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "../common/Button";
 import cn from "../../utils/cn";
+import { useCategories } from "@/hooks/useCategories";
+import { flattenCategoryTree } from "@/lib/category-utils";
+import { hasUserRole } from "@/utils/roles";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { sidebarOpen, setSidebarOpen } = useUIStore();
   const { user, isAuthenticated, logout } = useAuth();
+  const { catalogCategories, fetchCatalogCategories } = useCategories();
+  const isAdmin = hasUserRole(user, "admin");
+  const canAccessCatalog = isAdmin || hasUserRole(user, "seller");
+
+  useEffect(() => {
+    if (canAccessCatalog) void fetchCatalogCategories();
+  }, [canAccessCatalog, fetchCatalogCategories]);
 
   const navLinks = [
     { href: "/", label: "Inicio" },
@@ -29,7 +40,7 @@ const Sidebar = () => {
         { href: "/register", label: "Crear cuenta" },
       ];
 
-  const adminLinks = user?.role?.includes("admin")
+  const adminLinks = isAdmin
     ? [
         { href: "/users-admin", label: "Usuarios" },
         { href: "/categories-admin", label: "Categorías" },
@@ -138,7 +149,7 @@ const Sidebar = () => {
               </nav>
             </div>
 
-            {adminLinks.length > 0 && (
+            {(adminLinks.length > 0 || canAccessCatalog) && (
               <div className="mt-6 border-t border-input pt-6">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                   Administración
@@ -161,6 +172,32 @@ const Sidebar = () => {
                     </button>
                   ))}
                 </nav>
+                {canAccessCatalog &&
+                  flattenCategoryTree(catalogCategories).filter(
+                    (category) => (category.products?.length ?? 0) > 0,
+                  ).length > 0 && (
+                    <>
+                      <p className="px-4 py-3 font-medium text-foreground">
+                        Catálogo
+                      </p>
+                      {flattenCategoryTree(catalogCategories)
+                        .filter(
+                          (category) => (category.products?.length ?? 0) > 0,
+                        )
+                        .map((category) => (
+                          <button
+                            key={category.id}
+                            type="button"
+                            onClick={() =>
+                              handleNavigation(`/catalogo/${category.id}`)
+                            }
+                            className="w-full rounded-lg px-4 py-3 pl-8 text-left text-foreground transition-colors hover:bg-muted"
+                          >
+                            {category.name}
+                          </button>
+                        ))}
+                    </>
+                  )}
               </div>
             )}
           </div>

@@ -9,12 +9,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { AdminCatalogMenu } from "./AdminCatalogMenu";
+import { hasUserRole } from "@/utils/roles";
 
 export const AdminMenuComponent = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const isAdmin = hasUserRole(user, "admin");
+  const canAccessCatalog = isAdmin || hasUserRole(user, "seller");
 
-  if (!isAuthenticated || !user?.role?.includes("admin")) {
+  if (!isAuthenticated || !canAccessCatalog) {
     return null;
   }
 
@@ -29,34 +33,35 @@ export const AdminMenuComponent = () => {
       />
       <DropdownMenuContent className="w-40" align="start">
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate("/users-admin")}>
-            Usuarios
-            {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/categories-admin")}>
-            Categorías
-            {/* <DropdownMenuShortcut>⌘B</DropdownMenuShortcut> */}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/products-admin")}>
-            Productos
-            {/* <DropdownMenuShortcut>⌘S</DropdownMenuShortcut> */}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/banners-admin")}>
-            Banners
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/orders-admin")}>
-            Ordenes
-            {/* <DropdownMenuShortcut>⌘S</DropdownMenuShortcut> */}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/information-admin")}>
-            Información
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/about-admin")}>
-            Acerca de Nosotros
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/qr-admin")}>
-            Genere QR
-          </DropdownMenuItem>
+          {isAdmin && (
+            <>
+              <DropdownMenuItem onClick={() => navigate("/users-admin")}>
+                Usuarios
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/categories-admin")}>
+                Categorías
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/products-admin")}>
+                Productos
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/banners-admin")}>
+                Banners
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/orders-admin")}>
+                Ordenes
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/information-admin")}>
+                Información
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/about-admin")}>
+                Acerca de Nosotros
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/qr-admin")}>
+                Genere QR
+              </DropdownMenuItem>
+            </>
+          )}
+          {canAccessCatalog && <AdminCatalogMenu />}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -7,10 +7,12 @@ import {
 } from "../types/category.types";
 import { showError, showSuccess } from "../utils/toast";
 import { CategoryFilters } from "../types/category.types";
+import { buildCategoryTree } from "../lib/category-utils";
 
 interface CategoryState {
   categories: Category[];
   tree: Category[];
+  catalogCategories: Category[];
   selectedCategory: Category | null;
   isLoading: boolean;
   error: string | null;
@@ -21,6 +23,7 @@ interface CategoryState {
   filters: CategoryFilters;
   fetchAll: (page?: number, limit?: number) => Promise<void>;
   fetchTree: () => Promise<void>;
+  fetchCatalogCategories: () => Promise<void>;
   createCategory: (payload: CreateCategoryPayload) => Promise<void>;
   updateCategory: (id: string, payload: UpdateCategoryPayload) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
@@ -42,6 +45,7 @@ const defaultFilters: CategoryFilters = {
 export const useCategoryStore = create<CategoryState>((set, get) => ({
   categories: [],
   tree: [],
+  catalogCategories: [],
   selectedCategory: null,
   isLoading: false,
   error: null,
@@ -74,6 +78,21 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     try {
       const data = await categoriesService.getTree();
       set({ tree: data, isLoading: false });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  fetchCatalogCategories: async () => {
+    if (get().catalogCategories.length > 0) return;
+
+    set({ isLoading: true, error: null });
+    try {
+      const categories = await categoriesService.getWithProducts();
+      set({
+        catalogCategories: buildCategoryTree(categories),
+        isLoading: false,
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

@@ -14,6 +14,7 @@ export const createUserSchema = z.object({
     .string({ error: "La contrasena es requerida" })
     .min(8, "La contrasena debe tener al menos 8 caracteres")
     .max(20, "La contrasena no puede exceder 20 caracteres"),
+  roleId: z.string().min(1, "El rol es requerido"),
 });
 
 export const updateUserSchema = createUserSchema.omit({ password: true });
