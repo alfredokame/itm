@@ -103,7 +103,7 @@ export const ProductCard = ({
 
   return (
     <Card
-      className={`group relative flex h-full w-full max-w-full flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white text-left shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_28px_70px_rgba(30,58,138,0.16)] ${className}`}
+      className={`group relative flex h-full w-full max-w-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-left shadow-[0_12px_30px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_52px_rgba(30,58,138,0.16)] ${className}`}
     >
       {/* Línea superior premium */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-600 opacity-90" />
@@ -111,14 +111,14 @@ export const ProductCard = ({
       {/* ===== Imagen ===== */}
       <Link
         to={`/product/${id}`}
-        className="relative block aspect-square w-full overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/70"
+        className="relative block aspect-video w-full overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/70"
       >
         <img
           src={imageUrl}
           alt={name}
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-contain p-6 transition-transform duration-700 group-hover:scale-110"
+          className="h-full w-full object-contain p-2.5 transition-transform duration-700 group-hover:scale-105"
         />
 
         {/* Overlay suave al hacer hover */}
@@ -167,7 +167,7 @@ export const ProductCard = ({
       </Link>
 
       {/* ===== Información ===== */}
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex flex-1 flex-col gap-2 p-2">
         <Link to={`/product/${id}`} className="block min-w-0">
           <h3
             className="truncate text-sm font-semibold text-slate-900 transition-colors group-hover:text-blue-950"
@@ -186,7 +186,7 @@ export const ProductCard = ({
           )}
         </Link>
 
-        <div className="mt-auto space-y-3">
+        <div className="mt-auto space-y-2">
           {/* Precio + stock */}
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -219,7 +219,7 @@ export const ProductCard = ({
 
           {/* Cantidad + botón */}
           {stock > 0 && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <div className="flex shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 shadow-inner">
                 <button
                   type="button"
@@ -265,4 +265,4 @@ export const ProductCard = ({
       </div>
     </Card>
   );
-};;
+};
