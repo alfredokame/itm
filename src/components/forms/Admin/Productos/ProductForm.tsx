@@ -5,7 +5,7 @@ import { ImageUpload } from "@/components/features/ImagesUpload";
 import { CategoryTreeSelect } from "@/components/category/CategoryTreeSelect";
 import InputComponent from "@/components/common/InputComponent";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Product } from "@/types/product.types";
+import { Product, type ProductSaleUnit } from "@/types/product.types";
 import { useProducts } from "@/hooks/useProducts";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
@@ -17,6 +17,7 @@ const productSchema = z.object({
   stock: z.coerce.number().int().min(0, "Stock debe ser entero no negativo"),
   categoryId: z.string().min(1, "Selecciona una categoría"),
   isWholesale: z.boolean().optional(),
+  saleUnit: z.enum(["BOX", "PALLET"]),
 });
 
 type ProductFormValues = {
@@ -26,6 +27,7 @@ type ProductFormValues = {
   stock: number;
   categoryId: string;
   isWholesale?: boolean;
+  saleUnit: ProductSaleUnit;
 };
 
 interface ProductFormProps {
@@ -49,6 +51,7 @@ export const ProductForm = ({ product, onSuccess }: ProductFormProps) => {
         stock: product?.stock ?? 0,
         categoryId: product?.categoryId || "",
         isWholesale: product?.isWholesale ?? false,
+        saleUnit: product?.saleUnit ?? "BOX",
       },
     },
   );
@@ -61,6 +64,7 @@ export const ProductForm = ({ product, onSuccess }: ProductFormProps) => {
       stock: product?.stock ?? 0,
       categoryId: product?.categoryId || "",
       isWholesale: product?.isWholesale ?? false,
+      saleUnit: product?.saleUnit ?? "BOX",
     });
   }, [product, reset]);
 
@@ -91,10 +95,7 @@ export const ProductForm = ({ product, onSuccess }: ProductFormProps) => {
       formData.append("categoryId", data.categoryId);
       // send boolean as string so backend (multipart) receives it
       formData.append("isWholesale", String(!!data.isWholesale));
-       console.log(data.isWholesale)
-      // if (data.isWholesale) {
-      //   formData.append("isWholesale", "true");
-      // }
+      formData.append("saleUnit", data.saleUnit);
 
       newImageFiles.forEach((file) => {
         formData.append("images", file);
@@ -161,6 +162,25 @@ export const ProductForm = ({ product, onSuccess }: ProductFormProps) => {
         )}
       />
 
+      <Controller
+        name="saleUnit"
+        control={control}
+        render={({ field }) => (
+          <Field>
+            <FieldLabel htmlFor="saleUnit">Unidad de venta</FieldLabel>
+            <select
+              id="saleUnit"
+              value={field.value}
+              onChange={(event) => field.onChange(event.target.value)}
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="BOX">Caja</option>
+              <option value="PALLET">Parlet</option>
+            </select>
+          </Field>
+        )}
+      />
+
       <Field className="items-center gap-3" orientation="horizontal">
         <Controller
           name="isWholesale"
@@ -175,7 +195,7 @@ export const ProductForm = ({ product, onSuccess }: ProductFormProps) => {
                 className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
               />
               <FieldLabel htmlFor="isWholesale" className="text-sm font-medium">
-                Venta por Parlet
+                Venta mayorista
               </FieldLabel>
             </>
           )}

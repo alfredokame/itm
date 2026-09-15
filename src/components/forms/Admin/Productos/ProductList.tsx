@@ -41,6 +41,7 @@ export const ProductList = ({
           <TableHead>Nombre</TableHead>
           <TableHead>Precio</TableHead>
           <TableHead>Stock</TableHead>
+          <TableHead>Unidad</TableHead>
           <TableHead>Estado</TableHead>
           <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
@@ -51,6 +52,9 @@ export const ProductList = ({
             <TableCell>{product.name}</TableCell>
             <TableCell>{formatPrice(product.price)}</TableCell>
             <TableCell>{product.stock}</TableCell>
+            <TableCell>
+              {product.saleUnit === "PALLET" ? "Parlet" : "Caja"}
+            </TableCell>
             <TableCell>
               <Badge
                 variant={product.status === "active" ? "default" : "secondary"}

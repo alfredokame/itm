@@ -18,18 +18,34 @@ const AllProducts = () => {
     setFilters,
   } = useProducts();
 
-  const { isWholesale } = useParams<{ isWholesale?: string }>();
+  const { saleUnit } = useParams<{ saleUnit?: string }>();
 
-  const isWholesaleMode = isWholesale === "true";
+  const isLegacyWholesaleMode = saleUnit === "true";
+  const saleUnitFilter =
+    saleUnit === "BOX" || saleUnit === "PALLET"
+      ? saleUnit
+      : saleUnit?.toLowerCase() === "box"
+        ? "BOX"
+        : saleUnit?.toLowerCase() === "pallet"
+          ? "PALLET"
+          : undefined;
 
-  const pageTitle = isWholesaleMode
-    ? "Ventas por Parlet"
-    : "Productos Minoristas";
+  const pageTitle =
+    saleUnitFilter === "PALLET"
+      ? "Ventas por Parlet"
+      : saleUnitFilter === "BOX"
+        ? "Ventas por Caja"
+        : isLegacyWholesaleMode
+          ? "Ventas Mayoristas"
+          : "Productos";
 
   useEffect(() => {
-    setFilters({ isWholesale: isWholesaleMode });
+    setFilters({
+      isWholesale: isLegacyWholesaleMode ? true : undefined,
+      saleUnit: saleUnitFilter,
+    });
     void fetchProducts();
-  }, [fetchProducts, isWholesaleMode, setFilters]);
+  }, [fetchProducts, isLegacyWholesaleMode, saleUnitFilter, setFilters]);
 
   useEffect(() => {
     document.title = pageTitle;

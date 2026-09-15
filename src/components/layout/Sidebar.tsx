@@ -24,8 +24,8 @@ const Sidebar = () => {
 
   const navLinks = [
     { href: "/", label: "Inicio" },
-    { href: "/products", label: "Productos Minoristas" },
-    { href: "/products/true", label: "Ventas por Parlet" },
+    { href: "/products/box", label: "Ventas por Caja" },
+    { href: "/products/pallet", label: "Ventas por Parlet" },
     { href: "/about", label: "Sobre nosotros" },
   ];
 

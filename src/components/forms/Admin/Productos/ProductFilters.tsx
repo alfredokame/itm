@@ -17,6 +17,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import InputComponent from "@/components/common/InputComponent";
 import { useCategories } from "@/hooks/useCategories";
 import { flattenCategoryTree } from "@/lib/category-utils";
+import { useParams } from "react-router-dom";
 
 const filterSchema = z.object({
   search: z.string().optional(),
@@ -35,6 +36,7 @@ const filterSchema = z.object({
         : Number(value),
     z.number().min(0).optional(),
   ),
+  saleUnit: z.enum(["BOX", "PALLET"]).optional(),
 });
 
 type FilterFormValues = z.infer<typeof filterSchema>;
@@ -51,6 +53,13 @@ const normalizeNumberField = (value: unknown) => {
 export const ProductFilters = () => {
   const { filters, setFilters } = useProducts();
   const { tree, fetchTree } = useCategories();
+  const { saleUnit: routeSaleUnit } = useParams<{ saleUnit?: string }>();
+  const lockedSaleUnit =
+    routeSaleUnit?.toLowerCase() === "box"
+      ? "BOX"
+      : routeSaleUnit?.toLowerCase() === "pallet"
+        ? "PALLET"
+        : undefined;
 
   const form = useForm<FilterFormValues>({
     resolver: zodResolver(filterSchema) as Resolver<FilterFormValues>,
@@ -59,6 +68,7 @@ export const ProductFilters = () => {
       categoryId: filters.categoryId ? String(filters.categoryId) : "",
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
+      saleUnit: lockedSaleUnit ?? filters.saleUnit,
     },
   });
 
@@ -66,33 +76,30 @@ export const ProductFilters = () => {
     void fetchTree();
   }, [fetchTree]);
 
+  useEffect(() => {
+    if (lockedSaleUnit) {
+      form.setValue("saleUnit", lockedSaleUnit, { shouldValidate: false });
+    }
+  }, [form, lockedSaleUnit]);
+
   const categoryOptions = flattenCategoryTree(tree).map((cat) => ({
     label: cat.name,
     value: String(cat.id),
   }));
 
   const onSubmit = async (values: FilterFormValues) => {
-    const cleanedFilters: Partial<FilterFormValues> = {};
-
-    if (values.search?.trim()) {
-      cleanedFilters.search = values.search.trim();
-    }
-
-    if (values.categoryId && values.categoryId.trim()) {
-      cleanedFilters.categoryId = values.categoryId;
-    }
-
+    const search = values.search?.trim() || undefined;
+    const categoryId = values.categoryId?.trim() || undefined;
     const minPrice = normalizeNumberField(values.minPrice);
-    if (minPrice !== undefined) {
-      cleanedFilters.minPrice = minPrice;
-    }
-
     const maxPrice = normalizeNumberField(values.maxPrice);
-    if (maxPrice !== undefined) {
-      cleanedFilters.maxPrice = maxPrice;
-    }
 
-    setFilters(cleanedFilters);
+    setFilters({
+      search,
+      categoryId,
+      minPrice,
+      maxPrice,
+      saleUnit: lockedSaleUnit ?? values.saleUnit,
+    });
   };
 
   const handleClearFilters = () => {
@@ -101,6 +108,7 @@ export const ProductFilters = () => {
       categoryId: "",
       minPrice: "",
       maxPrice: "",
+      saleUnit: lockedSaleUnit,
     } as unknown as FilterFormValues);
 
     form.setValue("categoryId", "", { shouldValidate: false });
@@ -110,6 +118,7 @@ export const ProductFilters = () => {
       categoryId: undefined,
       minPrice: undefined,
       maxPrice: undefined,
+      saleUnit: lockedSaleUnit,
     });
   };
 
@@ -117,7 +126,7 @@ export const ProductFilters = () => {
     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-full">
       <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         {/* Filtros */}
-        <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:flex-1 xl:grid-cols-4">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:flex-1 xl:grid-cols-5">
           {/* Buscador */}
           <div className="w-full min-w-0 [&_input]:w-full">
             <InputComponent
@@ -199,6 +208,42 @@ export const ProductFilters = () => {
                 className="w-full min-w-0"
               />
             </Field>
+          </div>
+
+          {/* Unidad de venta */}
+          <div className="w-full min-w-0">
+            <Controller
+              name="saleUnit"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Unidad de venta</FieldLabel>
+                  <Select
+                    items={[
+                      { label: "Todas", value: "all" },
+                      { label: "Caja", value: "BOX" },
+                      { label: "Parlet", value: "PALLET" },
+                    ]}
+                    value={field.value ?? "all"}
+                    disabled={Boolean(lockedSaleUnit)}
+                    onValueChange={(value) =>
+                      field.onChange(value === "all" ? undefined : value)
+                    }
+                  >
+                    <SelectTrigger className="w-full min-w-0">
+                      <SelectValue placeholder="Unidad de venta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="BOX">Caja</SelectItem>
+                        <SelectItem value="PALLET">Parlet</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
           </div>
         </div>
 

@@ -22,7 +22,10 @@ export interface Product {
   sku?: string;
   status?: "active" | "inactive";
   isWholesale?: boolean;
+  saleUnit?: ProductSaleUnit;
 }
+
+export type ProductSaleUnit = "BOX" | "PALLET";
 
 export type CreateProductPayload = {
   name: string;
@@ -32,12 +35,14 @@ export type CreateProductPayload = {
   categoryId: string;
   images?: string[];
   isWholesale?: boolean;
+  saleUnit?: ProductSaleUnit;
 };
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;
 
 export interface ProductFilters {
   isWholesale?: boolean;
+  saleUnit?: ProductSaleUnit;
   search?: string;
   categoryId?: string;
   minPrice?: number;
