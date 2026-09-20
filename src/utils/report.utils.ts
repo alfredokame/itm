@@ -1,6 +1,8 @@
 import type {
   ReportFilters,
+  ReportOrderDetail,
   ReportPeriod,
+  ReportSaleDetail,
 } from "@/types/report.types";
 
 export const REPORT_PERIOD_LABELS: Record<ReportPeriod, string> = {
@@ -25,6 +27,37 @@ export const formatReportDateTime = (value: string) =>
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+
+export const getReportCustomerName = (
+  detail: ReportOrderDetail | ReportSaleDetail,
+  sale = false,
+) => {
+  const saleDetail = detail as ReportSaleDetail;
+  return (
+    (sale ? saleDetail.customerName : undefined) ||
+    detail.user?.fullName ||
+    `${detail.user?.firstName ?? ""} ${detail.user?.lastName ?? ""}`.trim() ||
+    (sale ? saleDetail.customerEmail : undefined) ||
+    detail.user?.email ||
+    "Cliente"
+  );
+};
+
+export const getReportStatusLabel = (status?: string) => {
+  const labels: Record<string, string> = {
+    pending: "Pendiente",
+    confirmed: "Confirmado",
+    preparing: "Preparando",
+    ready_for_pickup: "Listo para recoger",
+    shipped: "Enviado",
+    delivered: "Entregado",
+    cancelled: "Cancelado",
+    paid: "Pagada",
+    completed: "Completada",
+  };
+
+  return status ? labels[status] ?? status : "—";
+};
 
 export const toUtcIso = (value: string) =>
   new Date(`${value}T00:00:00.000Z`).toISOString();

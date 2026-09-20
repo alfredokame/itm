@@ -27,6 +27,7 @@ export const useReportLists = (filters: ReportFilters) => {
     useState<ReportListState<ReportOrderDetail>>(initialState);
   const [sales, setSales] =
     useState<ReportListState<ReportSaleDetail>>(initialState);
+  const [isExporting, setIsExporting] = useState(false);
 
   const loadOrders = useCallback(
     async (page: number) => {
@@ -88,6 +89,51 @@ export const useReportLists = (filters: ReportFilters) => {
     [filters],
   );
 
+  const loadAllReports = useCallback(async () => {
+    const limit = 100;
+    const allOrders: ReportOrderDetail[] = [];
+    const allSales: ReportSaleDetail[] = [];
+
+    for (let page = 1; ; page += 1) {
+      const response = await reportsService.getOrdersList({
+        ...getListDateFilters(filters),
+        sellerId: filters.sellerId,
+        page,
+        limit,
+      });
+      allOrders.push(...response.data.data);
+
+      if (page >= response.data.pagination.totalPages) {
+        break;
+      }
+    }
+
+    for (let page = 1; ; page += 1) {
+      const response = await reportsService.getSalesList({
+        ...getListDateFilters(filters),
+        sellerId: filters.sellerId,
+        page,
+        limit,
+      });
+      allSales.push(...response.data.data);
+
+      if (page >= response.data.pagination.totalPages) {
+        break;
+      }
+    }
+
+    return { orders: allOrders, sales: allSales };
+  }, [filters]);
+
+  const exportReports = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      return await loadAllReports();
+    } finally {
+      setIsExporting(false);
+    }
+  }, [loadAllReports]);
+
   useEffect(() => {
     void Promise.all([loadOrders(1), loadSales(1)]);
   }, [loadOrders, loadSales]);
@@ -97,5 +143,7 @@ export const useReportLists = (filters: ReportFilters) => {
     sales,
     loadOrders,
     loadSales,
+    exportReports,
+    isExporting,
   };
 };
