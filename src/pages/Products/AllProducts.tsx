@@ -30,14 +30,9 @@ const AllProducts = () => {
           ? "PALLET"
           : undefined;
 
-  const pageTitle =
-    saleUnitFilter === "PALLET"
-      ? "Ventas por Parlet"
-      : saleUnitFilter === "BOX"
-        ? "Ventas por Caja"
-        : isLegacyWholesaleMode
-          ? "Ventas Mayoristas"
-          : "Productos";
+  const pageTitle = isLegacyWholesaleMode
+    ? "Ventas por Parlet"
+    : "Productos Caja";
 
   useEffect(() => {
     setFilters({
