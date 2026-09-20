@@ -59,9 +59,13 @@ export const AdminMenuComponent = () => {
               <DropdownMenuItem onClick={() => navigate("/qr-admin")}>
                 Genere QR
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/reports-admin")}>
+                Reportes
+              </DropdownMenuItem>
             </>
           )}
           {canAccessCatalog && <AdminCatalogMenu />}
+          
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
