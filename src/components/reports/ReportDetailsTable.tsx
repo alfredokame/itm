@@ -7,38 +7,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { ReportOrderDetail, ReportSaleDetail } from "@/types/report.types";
-import { formatReportAmount, formatReportDateTime } from "@/utils/report.utils";
-
-const getStatusLabel = (status?: string) => {
-  const labels: Record<string, string> = {
-    pending: "Pendiente",
-    confirmed: "Confirmado",
-    preparing: "Preparando",
-    ready_for_pickup: "Listo para recoger",
-    shipped: "Enviado",
-    delivered: "Entregado",
-    cancelled: "Cancelado",
-    paid: "Pagada",
-    completed: "Completada",
-  };
-
-  return status ? labels[status] ?? status : "—";
-};
-
-const getCustomerName = (
-  detail: ReportOrderDetail | ReportSaleDetail,
-  sale = false,
-) => {
-  const saleDetail = detail as ReportSaleDetail;
-  return (
-    (sale ? saleDetail.customerName : undefined) ||
-    detail.user?.fullName ||
-    `${detail.user?.firstName ?? ""} ${detail.user?.lastName ?? ""}`.trim() ||
-    (sale ? saleDetail.customerEmail : undefined) ||
-    detail.user?.email ||
-    "Cliente"
-  );
-};
+import {
+  formatReportAmount,
+  formatReportDateTime,
+  getReportCustomerName,
+  getReportStatusLabel,
+} from "@/utils/report.utils";
 
 type ReportDetailsTableProps =
   | { kind: "orders"; details: ReportOrderDetail[] }
@@ -68,12 +42,12 @@ export const ReportDetailsTable = ({
               <TableCell className="font-medium">#{order.id}</TableCell>
               <TableCell>{formatReportDateTime(order.createdAt)}</TableCell>
               <TableCell>
-                <div>{getCustomerName(order)}</div>
+                <div>{getReportCustomerName(order)}</div>
                 {order.user?.email && (
                   <div className="text-xs text-muted-foreground">{order.user.email}</div>
                 )}
               </TableCell>
-              <TableCell>{getStatusLabel(order.status)}</TableCell>
+              <TableCell>{getReportStatusLabel(order.status)}</TableCell>
               <TableCell>
                 {order.deliveryMethod === "delivery" ? "Domicilio" : "Recogida"}
               </TableCell>
@@ -117,14 +91,14 @@ export const ReportDetailsTable = ({
             </TableCell>
             <TableCell>{formatReportDateTime(sale.paidAt ?? sale.createdAt)}</TableCell>
             <TableCell>
-              <div>{getCustomerName(sale, true)}</div>
+              <div>{getReportCustomerName(sale, true)}</div>
               {(sale.customerEmail || sale.user?.email) && (
                 <div className="text-xs text-muted-foreground">
                   {sale.customerEmail || sale.user?.email}
                 </div>
               )}
             </TableCell>
-            <TableCell>{getStatusLabel(sale.status)}</TableCell>
+            <TableCell>{getReportStatusLabel(sale.status)}</TableCell>
             <TableCell>{sale.reference || sale.transactionId || "—"}</TableCell>
             <TableCell>{sale.currency || "—"}</TableCell>
             <TableCell className="text-right">

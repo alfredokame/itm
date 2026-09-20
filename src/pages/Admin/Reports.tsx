@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { Download } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { DataStateSkeleton } from "@/components/common/DataStateSkeleton";
@@ -14,6 +15,8 @@ import type {
   ReportPeriod,
 } from "@/types/report.types";
 import { toUtcIso } from "@/utils/report.utils";
+import { exportReportsToExcel } from "@/utils/report.export";
+import { showError, showSuccess } from "@/utils/toast";
 
 export const ReportsPage = () => {
   const {
@@ -26,7 +29,14 @@ export const ReportsPage = () => {
     setFilters,
   } = useReports();
   const { users, isLoading: isLoadingUsers, error: usersError } = useReportUsers();
-  const { orders, sales, loadOrders, loadSales } = useReportLists(filters);
+  const {
+    orders,
+    sales,
+    loadOrders,
+    loadSales,
+    exportReports,
+    isExporting,
+  } = useReportLists(filters);
   const [form, setForm] = useState<ReportFiltersType>(filters);
   const [customRange, setCustomRange] = useState(false);
 
@@ -78,14 +88,50 @@ export const ReportsPage = () => {
     );
   };
 
+  const handleExport = async () => {
+    try {
+      const data = await exportReports();
+      const seller = users.find((user) => user.id === filters.sellerId);
+      const result = await exportReportsToExcel(
+        filters,
+        ordersReport,
+        salesReport,
+        data,
+        seller ? `${seller.firstName} ${seller.lastName}`.trim() : undefined,
+      );
+      showSuccess("Reporte exportado", result.message);
+    } catch (exportError) {
+      showError(
+        "No se pudo exportar el reporte",
+        exportError instanceof Error
+          ? exportError.message
+          : "Intenta nuevamente en unos minutos.",
+      );
+    }
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
         <header>
-          <h1 className="text-2xl font-semibold">Reportes</h1>
-          <p className="text-sm text-muted-foreground">
-            Consulta pedidos registrados y ventas pagadas por período.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold">Reportes</h1>
+              <p className="text-sm text-muted-foreground">
+                Consulta pedidos registrados y ventas pagadas por período.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleExport()}
+              disabled={isLoading || isExporting || !ordersReport || !salesReport}
+              aria-label="Exportar reporte a Excel"
+            >
+              <Download />
+              {isExporting ? "Exportando..." : "Exportar a Excel"}
+            </Button>
+          </div>
         </header>
 
         <ReportFilters
