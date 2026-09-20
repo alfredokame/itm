@@ -107,4 +107,10 @@ export const ENDPOINTS = {
   PAYMENTS: {
     CREDIT_CARD: "/api/payments/credit-card",
   },
+  REPORTS: {
+    ORDERS: "/api/reports/orders",
+    ORDERS_LIST: "/api/reports/orders/list",
+    SALES: "/api/reports/sales",
+    SALES_LIST: "/api/reports/sales/list",
+  },
 };

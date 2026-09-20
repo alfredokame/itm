@@ -49,6 +49,7 @@ const Sidebar = () => {
         { href: "/orders-admin", label: "Órdenes" },
         { href: "/qr-admin", label: "Genere QR" },
         { href: "/about-admin", label: "Acerca de Nosotros" },
+        { href: "/reports-admin", label: "Reportes" },
       ]
     : [];
 
