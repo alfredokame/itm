@@ -24,7 +24,7 @@ const AllProducts = () => {
 
   const pageTitle = isWholesaleMode
     ? "Ventas por Parlet"
-    : "Productos Minoristas";
+    : "Productos Caja";
 
   useEffect(() => {
     setFilters({ isWholesale: isWholesaleMode });

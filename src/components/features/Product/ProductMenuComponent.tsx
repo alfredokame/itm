@@ -24,11 +24,11 @@ export const ProductMenuComponent = () => {
       <DropdownMenuContent className="w-40" align="start">
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => navigate("/products")}>
-            Minorista
+            Venta por Caja
             {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate("/products/true")}>
-            Venta por parlet
+            Venta por Parlet
             {/* <DropdownMenuShortcut>⌘B</DropdownMenuShortcut> */}
           </DropdownMenuItem>
         </DropdownMenuGroup>

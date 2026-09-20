@@ -13,7 +13,7 @@ const Sidebar = () => {
 
   const navLinks = [
     { href: "/", label: "Inicio" },
-    { href: "/products", label: "Productos Minoristas" },
+    { href: "/products", label: "Productos Caja" },
     { href: "/products/true", label: "Ventas por Parlet" },
     { href: "/about", label: "Sobre nosotros" },
   ];
